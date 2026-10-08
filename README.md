@@ -48,7 +48,7 @@ tshark -r CCTV.pcap \
  1 192.168.50.100
 ```
 
-`.200` stood out. What matters more than the count, though, is *where* those packets went. Looking at the source, destination, and ports showed attempts against camera `.12` and host `.5`:
+`.200` stood out. What matters more than the count, though, is where those packets went. Looking at the source, destination, and ports showed attempts against camera `.12` and host `.5`:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -67,7 +67,7 @@ tshark -r CCTV.pcap \
 192.168.50.200  192.168.50.5   3306
 ```
 
-*Selected packets only.* The scan covered FTP, SSH, Telnet, web interfaces, SMB, and RTSP on port `554`. To avoid counting the same port more than once:
+The scan covered FTP, SSH, Telnet, web interfaces, SMB, and RTSP on port `554`. To avoid counting the same port more than once:
 
 ```bash
 tshark -r CCTV.pcap \
