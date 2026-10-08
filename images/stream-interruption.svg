@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="254" viewBox="0 0 980 254" role="img" aria-labelledby="title desc">
+<title id="title">Camera 2 RTP stream interruption</title>
+<desc id="desc">Original RTP stream has SSRC 0x1de257b2 and ends at 1393.510585 seconds; new stream with SSRC 0xa6251f2d begins at 1402.486047 seconds. Gap is 8.975462 seconds. Schematic not to scale.</desc>
+<rect x=".5" y=".5" width="979" height="253" fill="#fff" stroke="#e5e7eb"/>
+<text x="32" y="37" font-family="Arial,sans-serif" font-size="19" font-weight="700" fill="#111827">CAM2 — RTP stream interruption</text>
+<text x="32" y="60" font-family="Arial,sans-serif" font-size="12" fill="#64748b">Packet-level timeline · schematic, not to scale</text>
+<rect x="44" y="99" width="494" height="32" fill="#e2e8f0" stroke="#334155" stroke-width="1.5"/>
+<rect x="652" y="99" width="276" height="32" fill="#f1f5f9" stroke="#334155" stroke-width="1.5"/>
+<text x="291" y="120" font-family="Arial,sans-serif" font-size="13" font-weight="700" text-anchor="middle" fill="#111827">Original SSRC 0x1de257b2</text>
+<text x="790" y="120" font-family="Arial,sans-serif" font-size="13" font-weight="700" text-anchor="middle" fill="#111827">Resumed SSRC 0xa6251f2d</text>
+<path d="M538 116 H652" stroke="#c52e36" stroke-width="2" stroke-dasharray="6 5"/>
+<path d="M538 146 V159 H652 V146" fill="none" stroke="#c52e36" stroke-width="1.6"/>
+<text x="595" y="177" font-family="Arial,sans-serif" font-size="15" font-weight="700" text-anchor="middle" fill="#b4232d">8.975462 s</text>
+<text x="538" y="195" font-family="Arial,sans-serif" font-size="12" text-anchor="end" fill="#475569">Frame 108636 · 1393.510585</text>
+<text x="652" y="213" font-family="Arial,sans-serif" font-size="12" text-anchor="start" fill="#475569">Frame 108664 · 1402.486047</text>
+<text x="40" y="236" font-family="Arial,sans-serif" font-size="12" fill="#64748b">The Sherlock's all-RTP maximum gap (11.5275 s) is a separate measurement.</text>
+</svg>

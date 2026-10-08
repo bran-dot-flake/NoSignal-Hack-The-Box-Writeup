@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1020" height="796" viewBox="0 0 1020 796" role="img" aria-labelledby="title desc">
+<title id="title">NoSignal CCTV attack timeline</title>
+<desc id="desc">Sequence of observed reconnaissance, RTSP request, HTTP authentication attempts and post-login activity, followed by a later RTP stream interruption and restart on camera CAM2.</desc>
+<rect x="0.5" y="0.5" width="1019" height="795" fill="#fff" stroke="#e5e7eb"/>
+<text x="36" y="42" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#111827">Attack timeline</text>
+<text x="36" y="67" font-family="Arial,sans-serif" font-size="13" fill="#64748b">March 12, 2026 · UTC · frame numbers from CCTV.pcap</text>
+<path d="M256 112 V644" stroke="#94a3b8" stroke-width="2" fill="none"/>
+<rect x="28" y="84" width="964" height="65" fill="#f8fafc"/>
+<circle cx="256" cy="112" r="7" fill="#475569" stroke="#fff" stroke-width="2"/>
+<text x="224" y="107" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:36</text>
+<text x="224" y="128" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">54400 onward</text>
+<text x="282" y="106" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#111827">TCP SYN scanning</text>
+<text x="282" y="129" font-family="Arial,sans-serif" font-size="14" fill="#374151">192.168.50.200 scans CAM2 and 192.168.50.5</text>
+<circle cx="256" cy="188" r="7" fill="#475569" stroke="#fff" stroke-width="2"/>
+<text x="224" y="183" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:37</text>
+<text x="224" y="204" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">54447–54449</text>
+<text x="282" y="182" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#111827">RTSP DESCRIBE</text>
+<text x="282" y="205" font-family="Arial,sans-serif" font-size="14" fill="#374151">CAM2 returns 401 and requests Digest authentication</text>
+<rect x="28" y="236" width="964" height="65" fill="#f8fafc"/>
+<circle cx="256" cy="264" r="7" fill="#c52e36" stroke="#fff" stroke-width="2"/>
+<text x="224" y="259" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:37–40</text>
+<text x="224" y="280" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">54462–54486</text>
+<text x="282" y="258" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#b4232d">Credential guessing</text>
+<text x="282" y="281" font-family="Arial,sans-serif" font-size="14" fill="#374151">HTTP POST to /ISAPI/Security/userCheck</text>
+<circle cx="256" cy="340" r="7" fill="#c52e36" stroke="#fff" stroke-width="2"/>
+<text x="224" y="335" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:40</text>
+<text x="224" y="356" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">54488</text>
+<text x="282" y="334" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#b4232d">Login accepted</text>
+<text x="282" y="357" font-family="Arial,sans-serif" font-size="14" fill="#374151">admin:admin receives HTTP 200 OK</text>
+<rect x="28" y="388" width="964" height="65" fill="#f8fafc"/>
+<circle cx="256" cy="416" r="7" fill="#c52e36" stroke="#fff" stroke-width="2"/>
+<text x="224" y="411" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:40–43</text>
+<text x="224" y="432" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">54490–54502</text>
+<text x="282" y="410" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#b4232d">Administrative requests</text>
+<text x="282" y="433" font-family="Arial,sans-serif" font-size="14" fill="#374151">Status, stream, recording, then reboot request</text>
+<circle cx="256" cy="492" r="7" fill="#475569" stroke="#fff" stroke-width="2"/>
+<text x="224" y="487" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:31:43</text>
+<text x="224" y="508" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">RTP after 703.660879s</text>
+<text x="282" y="486" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#111827">Earlier RTP session</text>
+<text x="282" y="509" font-family="Arial,sans-serif" font-size="14" fill="#374151">CAM2 video stream SSRC 0x1de257b2</text>
+<rect x="28" y="540" width="964" height="65" fill="#f8fafc"/>
+<circle cx="256" cy="568" r="7" fill="#475569" stroke="#fff" stroke-width="2"/>
+<text x="224" y="563" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:43:13</text>
+<text x="224" y="584" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">108636–108637</text>
+<text x="282" y="562" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#111827">Stream stops / TEARDOWN</text>
+<text x="282" y="585" font-family="Arial,sans-serif" font-size="14" fill="#374151">Last original RTP packet, then RTSP TEARDOWN</text>
+<circle cx="256" cy="644" r="7" fill="#475569" stroke="#fff" stroke-width="2"/>
+<text x="224" y="639" text-anchor="end" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#111827">02:43:22</text>
+<text x="224" y="660" text-anchor="end" font-family="Arial,sans-serif" font-size="12" fill="#64748b">108645–108664</text>
+<text x="282" y="638" font-family="Arial,sans-serif" font-size="16" font-weight="700" fill="#111827">RTSP reconnect / video resumes</text>
+<text x="282" y="661" font-family="Arial,sans-serif" font-size="14" fill="#374151">OPTIONS → DESCRIBE → SETUP → PLAY; new SSRC 0xa6251f2d</text>
+<text x="37" y="768" font-family="Arial,sans-serif" font-size="12" fill="#64748b">A reboot request was observed earlier; causation of the later interruption is not established by these packets alone.</text></svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img" aria-labelledby="title desc">
+<title id="title">Observed CCTV systems and network traffic</title>
+<desc id="desc">The attacker 192.168.50.200 scanned camera CAM2 and host 192.168.50.5. Camera CAM2 and camera CAM1 streamed RTP video to 192.168.50.5, likely a recorder. The diagram is a logical traffic map, not a physical network diagram.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#1f2937" stroke-width="1.5"/></marker><marker id="redarrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#c52e36" stroke-width="1.5"/></marker></defs>
+<rect x="0.5" y="0.5" width="979" height="559" fill="#fff" stroke="#e5e7eb"/>
+<text x="40" y="46" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#111827">Observed CCTV network traffic</text>
+<text x="40" y="72" font-family="Arial,sans-serif" font-size="13" fill="#64748b">Logical relationships inferred from CCTV.pcap · March 12, 2026</text>
+
+<!-- Edges behind blocks -->
+<path d="M326 178 H646" fill="none" stroke="#c52e36" stroke-width="2.5" marker-end="url(#redarrow)"/>
+<rect x="404" y="156" width="167" height="22" fill="white"/><text x="488" y="171" font-family="Arial,sans-serif" font-size="13" text-anchor="middle" fill="#b4232d">SYN, RTSP, HTTP</text>
+<path d="M196 269 V368" fill="none" stroke="#c52e36" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#redarrow)"/>
+<rect x="213" y="308" width="142" height="24" fill="white"/><text x="218" y="324" font-family="Arial,sans-serif" font-size="12" fill="#b4232d">Limited SYN probes</text>
+<path d="M646 240 H525 V396 H326" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="365" y="374" width="125" height="22" fill="white"/><text x="428" y="389" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#374151">RTP / H.264</text>
+<path d="M646 440 H326" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="413" y="421" width="138" height="22" fill="white"/><text x="482" y="436" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" fill="#374151">RTP video stream</text>
+
+<!-- attacker -->
+<rect x="66" y="115" width="260" height="154" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+<rect x="66" y="115" width="260" height="8" fill="#c52e36"/>
+<text x="87" y="152" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#111827">Attacker / scanner</text>
+<text x="87" y="182" font-family="Arial,sans-serif" font-size="16" fill="#111827">192.168.50.200</text>
+<text x="87" y="212" font-family="Arial,sans-serif" font-size="13" fill="#475569">16 unique ports scanned</text>
+<text x="87" y="234" font-family="Arial,sans-serif" font-size="13" fill="#475569">Credential guessing · admin:admin</text>
+
+<!-- camera2 -->
+<rect x="646" y="113" width="270" height="145" fill="#fff" stroke="#c52e36" stroke-width="2.5"/>
+<rect x="646" y="113" width="270" height="8" fill="#c52e36"/>
+<text x="666" y="152" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#111827">Camera 2 / CAM2</text>
+<text x="666" y="179" font-family="Arial,sans-serif" font-size="16" fill="#111827">192.168.50.12</text>
+<text x="666" y="205" font-family="Arial,sans-serif" font-size="13" fill="#475569">RTSP 554 · HTTP 80</text>
+<text x="666" y="229" font-family="Arial,sans-serif" font-size="13" fill="#b4232d">Directly targeted</text>
+
+<!-- recorder -->
+<rect x="66" y="368" width="260" height="115" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+<rect x="66" y="368" width="260" height="7" fill="#64748b"/>
+<text x="87" y="405" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#111827">Video receiver</text>
+<text x="87" y="431" font-family="Arial,sans-serif" font-size="16" fill="#111827">192.168.50.5</text>
+<text x="87" y="455" font-family="Arial,sans-serif" font-size="13" fill="#475569">Likely recorder / viewer</text>
+
+<!-- camera1 -->
+<rect x="646" y="385" width="270" height="106" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+<rect x="646" y="385" width="270" height="7" fill="#64748b"/>
+<text x="666" y="423" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#111827">Camera 1</text>
+<text x="666" y="449" font-family="Arial,sans-serif" font-size="16" fill="#111827">192.168.50.11</text>
+<text x="666" y="474" font-family="Arial,sans-serif" font-size="12" fill="#475569">RTP source; not directly targeted</text>
+<text x="40" y="533" font-family="Arial,sans-serif" font-size="12" fill="#64748b">Also observed: 192.168.50.100 (low-volume traffic; role not established)</text>
+</svg>
