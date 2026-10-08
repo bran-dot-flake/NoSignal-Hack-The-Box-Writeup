@@ -168,8 +168,6 @@ tshark -r CCTV.pcap \
 54492  02:31:40.852882 UTC  192.168.50.12 → 192.168.50.200  200
 ```
 
-*Timestamp formatting abbreviated above.* Several prior attempts returned `403`, while the `admin:admin` request received `200 OK`. The follow-on activity supports that the attacker now had usable access.
-
 ## Post-Authentication Camera Activity
 
 Here are the specific requests following the successful login. It is also evident that the attacker began interacting with the system: accessing the streaming channel, issuing a recording command, and requesting a system restart, like we heard about in the scenario.
@@ -288,8 +286,6 @@ The `.82` banner appeared before the stream restart, while `.80` appeared afterw
 
 ![NoSignal attack timeline](images/timeline.svg)
 
-*March 12, 2026 · UTC.*
-
 ## Key Findings
 
 - `192.168.50.200` scanned **16 distinct destination ports** and probed both `.12` and `.5`.
@@ -302,8 +298,6 @@ The `.82` banner appeared before the stream restart, while `.80` appeared afterw
 
 ## Resources
 
-- [Wireshark — TShark manual](https://www.wireshark.org/docs/man-pages/tshark.html)
-- [Wireshark — Display filter reference](https://www.wireshark.org/docs/dfref/)
 - [RFC 2326 — Real Time Streaming Protocol (RTSP)](https://datatracker.ietf.org/doc/html/rfc2326)
 - [RFC 3550 — RTP: A Transport Protocol for Real-Time Applications](https://datatracker.ietf.org/doc/html/rfc3550)
 - [RFC 6184 — RTP Payload Format for H.264 Video](https://datatracker.ietf.org/doc/html/rfc6184)
