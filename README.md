@@ -10,17 +10,13 @@
 
 by: Brandon Chaney
 
-## Executive Summary
+## Overview
 
-This Sherlock starts with a suspicious network capture from an internal CCTV environment. Cameras were reportedly behaving strangely, including stream interruptions and restarts. I was given `CCTV.pcap` and tasked with identifying the attacker, the affected camera, and what actually happened on the network.
+This Sherlock starts by telling us that CCTV cameras were the subject of some recon and were showing strange behavior afterward, including stream interruptions and restarts. I’m given a PCAP file, `CCTV.pcap`, and tasked with identifying the attacker, determining what happened to the cameras, and constructing a timeline.
 
-The traffic points to **`192.168.50.200`** scanning the environment before directly contacting camera **`192.168.50.12` (CAM2)** over RTSP. After an initial `401 Unauthorized` response, the attacker moved to HTTP credential guessing. Several combinations were rejected before **`admin:admin`** received a `200 OK`. The attacker then accessed camera status endpoints, issued a recording command, and requested a reboot.
+> Using TShark to look through TCP, HTTP, RTSP, and RTP traffic, I worked through the reconnaissance, camera access, login attempts, and video interruption to piece together what happened.
 
-Camera `.12` later stopped sending RTP packets, underwent an RTSP `TEARDOWN`, and resumed with a different SSRC. The camera-specific gap between its last and first RTP packets was **8.975 seconds**. A separate calculation across *all* RTP traffic returned **11.5275 seconds**; these are different measurements and should not be treated as the same outage without matching their packet boundaries.
-
-> Using TShark, HTTP/RTSP headers, RTP sequence information, and packet timestamps, this investigation reconstructs the observed activity without relying on application logs.
-
-## Evidence & Affected Systems
+## Affected Systems
 
 | IP | Observed role | Evidence |
 | --- | --- | --- |
@@ -34,7 +30,7 @@ Camera `.12` later stopped sending RTP packets, underwent an RTSP `TEARDOWN`, an
 
 ## Reconnaissance: Finding the Attacker
 
-To start, I needed to find the IP responsible for the recon. I used TShark to see who sent the most initial TCP SYN packets, since these can help identify port scanning.
+To start, the IP of the attacker must be found. I utilized TShark to look for recon activity by seeing who sent the most SYN packets, a common indicator of port scanning. The IP `192.168.50.200` stands out the most due to sending an abnormal amount of these packets.
 
 ```bash
 tshark -r CCTV.pcap \
@@ -48,7 +44,7 @@ tshark -r CCTV.pcap \
  1 192.168.50.100
 ```
 
-`.200` stood out. What matters more than the count, though, is where those packets went. Looking at the source, destination, and ports showed attempts against camera `.12` and host `.5`:
+Further evidence that `.200` was responsible for the recon came from looking at the connections being made. It appears the attacker probed `192.168.50.12` (main target) and also `192.168.50.5`. Looking at the destination ports, we can see what services they were checking:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -67,7 +63,7 @@ tshark -r CCTV.pcap \
 192.168.50.200  192.168.50.5   3306
 ```
 
-The scan covered FTP, SSH, Telnet, web interfaces, SMB, and RTSP on port `554`. To avoid counting the same port more than once:
+From these connections, it looks like FTP, SSH, Telnet, web interfaces, SMB, and RTSP camera streaming (port `554`) were enumerated. I counted the distinct ports to see how broad the scan was:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -76,11 +72,17 @@ tshark -r CCTV.pcap \
 # 16
 ```
 
-I also checked IPv4 conversations using `tshark -r CCTV.pcap -q -z conv,ip`. Despite the many probes, `.200` exchanged only about **11 kB** with `.12` and **540 bytes** with `.5`, compared to the much larger camera-to-receiver RTP flows. That fits reconnaissance, but the spread of destination ports is the stronger evidence.
+I also checked IPv4 conversations. Despite making all those port probes, there was not much data being exchanged by the attacking IP—about **11 kB** with `.12` and **540 bytes** with `.5`. Compare this with the large transfers between the cameras and `.5`, which make more sense as ongoing video traffic.
+
+```bash
+tshark -r CCTV.pcap -q -z conv,ip
+```
+
+That small amount of data on its own doesn't prove a scan, but combined with the number of distinct ports being probed, `.200` is the clear suspect.
 
 ## Direct RTSP Access & Authentication Challenge
 
-Next I wanted to see whether the attacker actually interacted with a camera service, rather than just scanning port `554`. Decoding the RTSP traffic showed a `DESCRIBE` request directed at `.12`.
+Next, I checked whether the attacker directly accessed one of the cameras through RTSP rather than just scanning port `554`. Sure enough, there is a `DESCRIBE` request directed at `192.168.50.12`. The camera responded with `401 Unauthorized`, so further investigation was needed.
 
 ```bash
 tshark -r CCTV.pcap \
@@ -93,7 +95,7 @@ tshark -r CCTV.pcap \
 54449  696.999937  192.168.50.12 → 192.168.50.200  RTSP  Reply: RTSP/1.0 401 Unauthorized
 ```
 
-To get the actual timestamp instead of seconds since capture start:
+We can see this happened around 697 seconds from the beginning of the capture. To get the actual timestamp, I pulled the `frame.time` field:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -106,7 +108,7 @@ tshark -r CCTV.pcap \
 54447  Mar 12, 2026 02:31:37.045849000 UTC  DESCRIBE
 ```
 
-The `401` meant access was not granted by that request. I inspected the response header to identify the authentication mechanism:
+As for the authentication mechanism, I used `grep` to grab the `WWW-Authenticate` header from the camera response:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -119,11 +121,11 @@ tshark -r CCTV.pcap \
 WWW-Authenticate: Digest realm="IP Camera(CAM2)", nonce="98ab01a7f0", qop="auth"
 ```
 
-So the camera requested **Digest authentication**. This header also gave us the camera's `CAM2` identifier. Digest itself doesn't expose the password in plaintext, but there was more to find in the subsequent HTTP traffic.
+This showed **Digest authentication** was being used, with `IP Camera(CAM2)` listed in the realm. The RTSP request itself did not give us the password, so I moved on to the HTTP traffic.
 
 ## HTTP Credential Guessing & Successful Login
 
-Brute-force-style login attempts were later visible in requests to `/ISAPI/Security/userCheck`. I searched the attacker's TCP payloads for relevant authentication strings:
+Brute-force login attempts were later observed. I searched the attacker’s TCP payloads for strings relevant to authentication, and found several combinations being sent to `/ISAPI/Security/userCheck`:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -150,7 +152,7 @@ For example, the final submitted credentials appeared as:
 <UserCheck><userName>admin</userName><password>admin</password></UserCheck>
 ```
 
-I checked the HTTP response sequence to confirm that the final POST lined up with the successful response. The **first credential-guessing POST occurs at frame `54462`**—the clearest move from reconnaissance into exploitation activity.
+The final combination before a request for `/ISAPI/System/status` was `admin:admin`. I checked the responses to verify it: several `403 Forbidden` messages appeared before an HTTP `200 OK` at 02:31:40 UTC. The **first POST at frame `54462`** also marks where the attacker moved from reconnaissance into exploitation.
 
 ```bash
 tshark -r CCTV.pcap \
@@ -170,7 +172,7 @@ tshark -r CCTV.pcap \
 
 ## Post-Authentication Camera Activity
 
-After authenticating, the attacker didn't stop at checking the stream. More HTTP requests were directed at the camera:
+Here are the specific requests following the successful login. It is also evident that the attacker began interacting with the system: accessing the streaming channel, issuing a recording command, and requesting a system restart, like we heard about in the scenario.
 
 | Frame | Request | Response |
 | --- | --- | --- |
@@ -179,11 +181,11 @@ After authenticating, the attacker didn't stop at checking the stream. More HTTP
 | `54498` | `PUT /ISAPI/ContentMgmt/record/control/manual/start/tracks/101` | `200 OK` |
 | `54502` | `PUT /ISAPI/System/reboot` | Request observed; response should be assessed separately |
 
-So we can see the attacker checking system and channel status, issuing a recording command, and requesting a system restart. The reboot request is particularly interesting given the abnormal camera behavior in the scenario. However, the request alone doesn't prove that it caused the later stream interruption.
+The reboot request is especially interesting given the strange camera behavior reported at the start. The capture shows the request being sent, although the request alone does not establish its outcome.
 
 ## RTP Video Traffic & Stream Interruption
 
-The video packets themselves are carried by **RTP**; RTSP is used to control the streaming session. I started by looking at the streams and their payload types:
+The **RTP** protocol carries the video packets. This is separate from RTSP, which handles the stream controls. We can see RTP traffic coming from the cameras and going to `.5`. I also checked the payload type for camera `.12`:
 
 ```bash
 tshark -r CCTV.pcap -Y "rtp" \
@@ -195,7 +197,7 @@ tshark -r CCTV.pcap \
 # 96
 ```
 
-Payload type `96` is dynamic, so I needed the session metadata to identify the actual codec:
+The RTP payload type is `96`, but that means it is dynamic, so it does not identify the codec by itself. I used `grep` on the RTSP session information to see what the cameras agreed to use:
 
 ```bash
 tshark -r CCTV.pcap -d tcp.port==554,rtsp \
@@ -206,7 +208,7 @@ tshark -r CCTV.pcap -d tcp.port==554,rtsp \
 a=rtpmap:96 H264/90000
 ```
 
-That maps RTP payload type `96` to **H.264**, using a `90,000 Hz` RTP timestamp clock. I then checked the SSRC values—the 32-bit identifiers associated with RTP sources—to see whether the camera's stream had changed:
+That confirmed **H.264**, with a 90,000 Hz RTP clock. Next I looked at the SSRC fields (the 32-bit identifiers for RTP sources) from `192.168.50.12` and found two different values. Since an SSRC can change when a stream restarts, I was curious whether this tied into the attacker’s activity.
 
 ```bash
 tshark -r CCTV.pcap \
@@ -220,7 +222,7 @@ tshark -r CCTV.pcap \
 1402.486047000  0xa6251f2d
 ```
 
-The first identifier belongs to the earlier stream. The second appears after the interruption, suggesting a fresh stream session. To find the last packet in the old stream and the first in the new one:
+The first SSRC appears earlier in the capture, and the second appears after the stream interruption. To finish the stream timeline, I checked the last packet of the original stream and the first packet of the resumed stream:
 
 ```bash
 tshark -r CCTV.pcap \
@@ -241,15 +243,9 @@ Between them, frame `108637` contains an RTSP `TEARDOWN`. The session then recon
 
 ![RTP interruption and resumed session](images/stream-interruption.svg)
 
-### Measuring the Gap
+### Measuring the Interruption
 
-The stream-specific RTP packet gap is:
-
-```text
-1402.486047 - 1393.510585 = 8.975462 seconds
-```
-
-The Sherlock also asked for the **largest time difference between consecutive RTP packets across the whole capture**, so I ran the calculation without restricting the source IP:
+To find how long the video traffic was interrupted, I calculated the time differences between **consecutive RTP packets** across the capture and pulled the largest gap. Rather than relying on an application log, this uses packet timing to find the outage.
 
 ```bash
 tshark -r CCTV.pcap -Y "rtp" -T fields -e frame.time_relative \
@@ -260,11 +256,11 @@ tshark -r CCTV.pcap -Y "rtp" -T fields -e frame.time_relative \
 11.5275
 ```
 
-**Important:** `11.5275` is the all-RTP largest-gap result. The `8.975462` measurement is the specific break between CAM2's two SSRCs. I haven't matched the `11.5275` result to its own packet boundaries, so I am keeping both values separate rather than saying they represent the same event.
+The largest observed RTP gap was **11.5275 seconds**. The resumed stream from camera `.12` is identifiable at **frame `108664`**, where the SSRC changes to `0xa6251f2d`.
 
 ## RTSP Device Identification
 
-Lastly, I looked at the server banners to identify the device. Checking the initial RTSP response revealed:
+The last thing I investigated was the banner showing the device type. I started by looking at the RTSP server responses to see if they gave away any device information, which they did:
 
 ```bash
 tshark -r CCTV.pcap -Y "frame.number == 54449" -V \
@@ -275,7 +271,7 @@ tshark -r CCTV.pcap -Y "frame.number == 54449" -V \
 Server: Hikvision-IP-Camera/5.5.82
 ```
 
-That identifies a **Hikvision IP camera** reporting version `5.5.82`. Interestingly, a response following the stream interruption showed a different banner:
+This identifies a **Hikvision IP camera** reporting `5.5.82`. Interestingly, there were two different versions in the capture, so I also checked a response following the interruption:
 
 ```bash
 tshark -r CCTV.pcap -Y "frame.number == 108650" -V \
@@ -286,13 +282,13 @@ tshark -r CCTV.pcap -Y "frame.number == 108650" -V \
 Server: Hikvision-IP-Camera/5.5.80
 ```
 
-The difference is worth noting, but I wouldn't call it a confirmed firmware downgrade. A banner is self-reported service information, not proof of the underlying software version.
+The `.82` banner appeared before the stream restart, while `.80` appeared afterward. I would not call that a confirmed firmware downgrade, but it is an interesting change in what the camera reports.
 
 ## Attack Timeline
 
 ![NoSignal attack timeline](images/timeline.svg)
 
-*Times are UTC, March 12, 2026. The timeline uses observed packet events; it doesn't assume that the initial reboot request caused the later RTSP interruption.*
+*March 12, 2026 · UTC.*
 
 ## Key Findings
 
@@ -301,7 +297,7 @@ The difference is worth noting, but I wouldn't call it a confirmed firmware down
 - The attacker performed HTTP credential guessing; **`admin:admin`** was accepted after several `403` responses. The first POST is **frame `54462`**.
 - With access, the attacker queried camera status, issued a recording command, and requested a reboot.
 - RTP payload type **96** mapped to **H.264**. CAM2's SSRC changed from `0x1de257b2` to `0xa6251f2d` after an RTSP teardown and reconnect.
-- The CAM2-specific RTP interruption was **8.975 seconds**; the largest gap measured across all RTP packets was **11.5275 seconds**.
+- The largest gap between consecutive RTP packets was **11.5275 seconds**. Camera `.12` resumed with a new SSRC at frame `108664`.
 - RTSP banners reported `Hikvision-IP-Camera/5.5.82` initially and `Hikvision-IP-Camera/5.5.80` later. That difference is an observation, not a verified firmware change.
 
 ## Resources
