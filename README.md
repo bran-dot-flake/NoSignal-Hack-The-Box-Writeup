@@ -22,10 +22,6 @@ Camera `.12` later stopped sending RTP packets, underwent an RTSP `TEARDOWN`, an
 
 ## Evidence & Affected Systems
 
-- **Evidence:** `CCTV.pcap` (162,678 packets; approximately 169 MB)
-- **Capture window:** March 12, 2026, `02:20:00`–`02:54:52` UTC
-- **Primary tools:** TShark, `grep`, `sort`, `uniq`, `awk`
-
 | IP | Observed role | Evidence |
 | --- | --- | --- |
 | `192.168.50.200` | Attacker / scanner | Multiple TCP SYN probes, RTSP request, HTTP authentication attempts |
