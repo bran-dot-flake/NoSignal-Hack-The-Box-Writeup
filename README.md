@@ -32,8 +32,6 @@ Camera `.12` later stopped sending RTP packets, underwent an RTSP `TEARDOWN`, an
 
 ![Affected systems diagram](images/affected-systems.svg)
 
-*Logical traffic relationships inferred from the capture, not a verified physical network topology.*
-
 ## Reconnaissance: Finding the Attacker
 
 To start, I needed to find the IP responsible for the recon. I used TShark to see who sent the most initial TCP SYN packets, since these can help identify port scanning.
